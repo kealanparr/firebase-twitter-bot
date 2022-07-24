@@ -14,7 +14,6 @@ const twitterClient = new TwitterAPI({
 
 // Generate Auth token from 0Auth2 Twitter
 exports.auth = functions.https.onRequest(async (_, response) => {
-
 	const { url, codeVerifier, state } = twitterClient.generateOAuth2AuthLink(
 		callbackURL,
 		{ scope: ['tweet.read', 'tweet.write', 'users.read', 'offline.access'] }
@@ -23,10 +22,10 @@ exports.auth = functions.https.onRequest(async (_, response) => {
 	response.redirect(url)
 })
 
+
 // Store token sent to us from Twitter
 // Stored using FireStore
 exports.callback = functions.https.onRequest(async (request, response) => {
-
 	const { state, code } = request.query
 
 	const dbSnapshot = await dbRef.get()
@@ -53,8 +52,8 @@ exports.callback = functions.https.onRequest(async (request, response) => {
 	response.send(data)
 })
 
-exports.scheduledFunctionCrontab = functions.pubsub.schedule('* * * * *').onRun(async (context) => {
 
+exports.scheduledFunctionCrontab = functions.pubsub.schedule('* * * * *').onRun(async (context) => {
 	const { refreshToken } = (await dbRef.get()).data()
 
   const {
@@ -68,7 +67,6 @@ exports.scheduledFunctionCrontab = functions.pubsub.schedule('* * * * *').onRun(
 	if (Math.round(Math.random())) {
 		axios.get('https://programming-quotes-api.herokuapp.com/Quotes/random')
 		.then(async axiosResp => {
-	
 			const { data } = await refreshedClient.v2.tweet(
 				`${axiosResp.data.en} - ${axiosResp.data.author}`
 			)
@@ -77,7 +75,6 @@ exports.scheduledFunctionCrontab = functions.pubsub.schedule('* * * * *').onRun(
 	} else {
 		axios.get('http://quotes.stormconsultancy.co.uk/random.json')
 		.then(async axiosResp => {
-	
 			const { data } = await refreshedClient.v2.tweet(
 				`${axiosResp.data.quote} - ${axiosResp.data.author}`
 			)
@@ -86,4 +83,4 @@ exports.scheduledFunctionCrontab = functions.pubsub.schedule('* * * * *').onRun(
 	}
 
 	return null
-});
+})
