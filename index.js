@@ -53,7 +53,7 @@ exports.callback = functions.https.onRequest(async (request, response) => {
 	response.send(data)
 })
 
-exports.tweet = functions.https.onRequest(async (request, response) => {
+exports.scheduledFunctionCrontab = functions.pubsub.schedule('* * * * *').onRun(async (context) => {
 
 	const { refreshToken } = (await dbRef.get()).data()
 
@@ -65,8 +65,6 @@ exports.tweet = functions.https.onRequest(async (request, response) => {
 
   await dbRef.set({ accessToken, refreshToken: newRefreshToken })
 
-	// Want to ensure I have enough quotes here, so have integrated two API's
-	// Generate either a 1 or 0 - then utilise that API for a quote
 	if (Math.round(Math.random())) {
 		axios.get('https://programming-quotes-api.herokuapp.com/Quotes/random')
 		.then(async axiosResp => {
@@ -74,7 +72,7 @@ exports.tweet = functions.https.onRequest(async (request, response) => {
 			const { data } = await refreshedClient.v2.tweet(
 				`${axiosResp.data.en} - ${axiosResp.data.author}`
 			)
-			response.send(data)
+			return null
 		})
 	} else {
 		axios.get('http://quotes.stormconsultancy.co.uk/random.json')
@@ -83,7 +81,9 @@ exports.tweet = functions.https.onRequest(async (request, response) => {
 			const { data } = await refreshedClient.v2.tweet(
 				`${axiosResp.data.quote} - ${axiosResp.data.author}`
 			)
-			response.send(data)
+			return null
 		})
 	}
-})
+
+	return null
+});
